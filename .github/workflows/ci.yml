@@ -41,4 +41,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image (no push on PR)
-        run: docker build -t todo-app:${{ github.sha }} .
+        run: docker build -t todo-app:${{ github.sha }} -f app/Dockerfile .
