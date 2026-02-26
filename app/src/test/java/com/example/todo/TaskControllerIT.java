@@ -1,8 +1,8 @@
-package com.example.todu;
+package com.example.todo;
 
-import com.example.todu.dto.TaskCreateRequest;
-import com.example.todu.dto.TaskUpdateRequest;
-import com.example.todu.model.Task;
+import com.example.todo.dto.TaskCreateRequest;
+import com.example.todo.dto.TaskUpdateRequest;
+import com.example.todo.model.Task;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

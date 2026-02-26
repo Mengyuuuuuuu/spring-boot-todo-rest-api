@@ -1,10 +1,10 @@
-package com.example.todu;
+package com.example.todo;
 
-import com.example.todu.dto.TaskCreateRequest;
-import com.example.todu.dto.TaskUpdateRequest;
-import com.example.todu.model.Task;
-import com.example.todu.repository.TaskRepository;
-import com.example.todu.service.TaskService;
+import com.example.todo.dto.TaskCreateRequest;
+import com.example.todo.dto.TaskUpdateRequest;
+import com.example.todo.model.Task;
+import com.example.todo.repository.TaskRepository;
+import com.example.todo.service.TaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.server.ResponseStatusException;
