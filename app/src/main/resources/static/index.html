@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ToDo - Task Manager</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      form {
+        display: flex;
+        gap: 8px;
+        margin: 16px 0;
+      }
+      input {
+        flex: 1;
+        padding: 10px;
+      }
+      button {
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 8px;
+      }
+      .left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .done {
+        text-decoration: line-through;
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Task Manager</h1>
+    <div id="status"></div>
+
+    <form id="createForm">
+      <input
+        id="title"
+        placeholder="Neue Aufgabe..."
+        maxlength="200"
+        required
+      />
+      <button type="submit">Add</button>
+    </form>
+
+    <ul id="list"></ul>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const listEl = document.getElementById("list");
+      const form = document.getElementById("createForm");
+      const titleInput = document.getElementById("title");
+
+      function setStatus(msg) {
+        statusEl.textContent = msg || "";
+      }
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, {
+          headers: { "Content-Type": "application/json" },
+          ...options,
+        });
+        if (!res.ok) {
+          let body = {};
+          try {
+            body = await res.json();
+          } catch {}
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        if (res.status === 204) return null;
+        return res.json();
+      }
+
+      async function load() {
+        setStatus("Loading...");
+        try {
+          const tasks = await api("/api/tasks");
+          render(tasks);
+          setStatus("");
+        } catch (e) {
+          setStatus("Error: " + e.message);
+        }
+      }
+
+      function render(tasks) {
+        listEl.innerHTML = "";
+        tasks
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .forEach((t) => {
+            const li = document.createElement("li");
+
+            const left = document.createElement("div");
+            left.className = "left";
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.checked = t.completed;
+            cb.addEventListener("change", async () => {
+              await api(`/api/tasks/${t.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ completed: cb.checked }),
+              });
+              load();
+            });
+
+            const span = document.createElement("span");
+            span.textContent = t.title;
+            if (t.completed) span.className = "done";
+
+            left.appendChild(cb);
+            left.appendChild(span);
+
+            const del = document.createElement("button");
+            del.textContent = "Delete";
+            del.addEventListener("click", async () => {
+              await api(`/api/tasks/${t.id}`, { method: "DELETE" });
+              load();
+            });
+
+            li.appendChild(left);
+            li.appendChild(del);
+            listEl.appendChild(li);
+          });
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = titleInput.value.trim();
+        if (!title) return;
+        await api("/api/tasks", {
+          method: "POST",
+          body: JSON.stringify({ title }),
+        });
+        titleInput.value = "";
+        load();
+      });
+
+      load();
+    </script>
+  </body>
+</html>
